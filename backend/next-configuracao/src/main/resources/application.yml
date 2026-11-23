@@ -97,10 +97,6 @@ spring:
     password: ${NEXT_DB_SENHA}
     hikari:
       maximum-pool-size: 10
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.OracleDialect
 next:
   demo:
     carregar: ${NEXT_DEMO_CARREGAR:false}

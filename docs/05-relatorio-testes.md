@@ -4,7 +4,7 @@
 |---|---|
 | Data da execução | 23/11/2026 |
 | Versão | 1.0.0 |
-| Ambiente | Windows 11, JDK Temurin 25.0.5, Node 24.21, H2 2.5 (modo Oracle); CI: Ubuntu + Oracle 23ai Free |
+| Ambiente | Windows 11, JDK Temurin 25.0.5, Node 24.21, H2 2.5 (modo Oracle); CI: Ubuntu 26.04 + Oracle 23ai Free (gvenzl/oracle-free) |
 | Resultado geral | **103 casos automatizados aprovados, 0 falhas** + 15 verificações ponta a ponta + verificação manual no navegador |
 
 ## 5.1 Resumo
@@ -17,10 +17,10 @@
 | BFF (sessão, CSRF, MFA, RBAC, degradação, trilha, exportação) | Spring Boot Test + Spring Security Test | 6 | 6 | 0 |
 | Front-end — CNPJ, calendário/SLA (porte TS), BFF simulado | Vitest + jsdom | 27 | 27 | 0 |
 | Checagem de tipos (TypeScript estrito) e lint | vue-tsc, oxlint, ESLint | — | sem erros | 0 |
-| Ponta a ponta pelo BFF real (módulo + BFF rodando) | `scripts/teste-fumaca.sh` | 15 | 15 | 0 |
+| Ponta a ponta pelo BFF real (módulo + BFF rodando) — local (H2) e CI (Oracle 23ai) | `scripts/teste-fumaca.sh` | 15 + 15 | 30 | 0 |
 | **Total automatizado** | | **103** (+15 E2E) | **103** | **0** |
 
-> O job **"Integração com Oracle"** do GitHub Actions executa as migrações Flyway e o mesmo teste de fumaça contra um Oracle real (23ai Free) a cada push. O resultado fica na aba *Actions* do repositório.
+> **Oracle real (CI):** o job "Integração com Oracle" do GitHub Actions ([execução 45197130050](https://github.com/RodrigoMViana/next/actions/runs/45197130050)) aplicou a migração Flyway no esquema `NEXT_CONFIGURACAO` de um Oracle 23ai Free, executou a carga fictícia pelos casos de uso e passou nas **15/15** verificações do teste de fumaça pelo BFF. O job roda a cada push.
 
 ## 5.2 Cobertura de código (JaCoCo — módulo next-configuracao)
 
