@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "demo-estatico",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--prefix", "frontend/next-app", "vite", "preview", "--outDir", "frontend/next-app/dist-demo", "--port", "4173", "--strictPort"],
+      "port": 4173
+    },
+    {
+      "name": "next-bff",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "scripts/iniciar-local.ps1"],
+      "port": 8080
+    }
+  ]
+}

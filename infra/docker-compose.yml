@@ -1,0 +1,75 @@
+# Ambiente completo com Oracle (homologação local / treinamento).
+#   cp infra/.env.exemplo infra/.env   (ajuste as senhas)
+#   docker compose -f infra/docker-compose.yml --env-file infra/.env up -d --build
+#   Abra http://localhost:8080
+# Somente o BFF publica porta para fora; o módulo e o banco ficam na rede interna (Arquitetura 9.1).
+name: next
+
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim-faststart
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_SENHA_ADMIN:?defina ORACLE_SENHA_ADMIN}
+      NEXT_CONFIGURACAO_SENHA: ${NEXT_DB_SENHA:?defina NEXT_DB_SENHA}
+      NEXT_AUDIT_SENHA: ${NEXT_AUDIT_DB_SENHA:?defina NEXT_AUDIT_DB_SENHA}
+    volumes:
+      - oracle-dados:/opt/oracle/oradata
+      - ./oracle/init:/container-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+    networks: [dados]
+
+  configuracao:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.configuracao
+    image: next-configuracao:1.0.0
+    depends_on:
+      oracle:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: oracle
+      NEXT_DB_URL: jdbc:oracle:thin:@//oracle:1521/FREEPDB1
+      NEXT_DB_USUARIO: NEXT_CONFIGURACAO
+      NEXT_DB_SENHA: ${NEXT_DB_SENHA}
+      NEXT_TOKEN_INTERNO_SEGREDO: ${NEXT_TOKEN_INTERNO_SEGREDO:?defina NEXT_TOKEN_INTERNO_SEGREDO}
+      NEXT_DEMO_CARREGAR: ${NEXT_DEMO_CARREGAR:-true}
+      NEXT_PORTFOLIO_MODO: ${NEXT_PORTFOLIO_MODO:-demo}
+      NEXT_PORTFOLIO_URL: ${NEXT_PORTFOLIO_URL:-}
+    networks: [servicos, dados]
+
+  bff:
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.bff
+    image: next-bff:1.0.0
+    depends_on:
+      oracle:
+        condition: service_healthy
+      configuracao:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: oracle
+      NEXT_AUDIT_DB_URL: jdbc:oracle:thin:@//oracle:1521/FREEPDB1
+      NEXT_AUDIT_DB_USUARIO: NEXT_AUDIT
+      NEXT_AUDIT_DB_SENHA: ${NEXT_AUDIT_DB_SENHA}
+      NEXT_CONFIGURACAO_URL: http://configuracao:8081
+      NEXT_TOKEN_INTERNO_SEGREDO: ${NEXT_TOKEN_INTERNO_SEGREDO}
+      NEXT_AUTH_MODO: ${NEXT_AUTH_MODO:-dev}
+      NEXT_COOKIE_SECURE: ${NEXT_COOKIE_SECURE:-false}
+    ports:
+      - "8080:8080"
+    networks: [borda, servicos, dados]
+
+volumes:
+  oracle-dados:
+
+networks:
+  borda:
+  servicos:
+    internal: true
+  dados:
+    internal: true

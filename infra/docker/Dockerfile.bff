@@ -1,0 +1,23 @@
+# Imagem OCI do next-bff com o next-app (Vue) embutido em /static
+# Build (na raiz do repositório): docker build -f infra/docker/Dockerfile.bff -t next-bff:1.0.0 .
+FROM node:24-alpine AS front
+WORKDIR /src/frontend/next-app
+COPY frontend/next-app/package*.json ./
+RUN npm ci
+COPY frontend/next-app/ ./
+RUN npx vue-tsc --build && npx vite build
+
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /src
+COPY backend/ backend/
+COPY --from=front /src/frontend/next-app/dist frontend/next-app/dist
+RUN cd backend && chmod +x mvnw && ./mvnw -B -q -pl next-bff -am -DskipTests package
+
+FROM eclipse-temurin:25-jre
+RUN useradd --system --uid 10001 next
+WORKDIR /app
+COPY --from=build /src/backend/next-bff/target/next-bff.jar app.jar
+USER next
+EXPOSE 8080
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -Duser.timezone=UTC"
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

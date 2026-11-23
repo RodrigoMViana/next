@@ -1,0 +1,24 @@
+# 2. Integrações Pendentes
+
+Todas as integrações externas foram isoladas em **portas** (interfaces) com um adaptador de demonstração funcionando hoje. Trocar o adaptador não exige mudança nas regras de negócio, nas telas nem nos contratos da API.
+
+| # | Integração | Situação atual | O que falta | Onde plugar | Dependência |
+|---|---|---|---|---|---|
+| I1 | **gov.br (CPF) + SSO do Next** — OIDC Authorization Code + PKCE no BFF | Login de desenvolvimento com usuários fictícios (`next.auth.modo=dev`) e MFA simulado (código `123456`) | Credenciamento no gov.br; cadastro do cliente OIDC confidencial; definição do provedor de MFA para usuários de fábrica; mapear `sub`/CPF para o usuário do Core | `next-bff`: adicionar `spring-boot-starter-oauth2-client`, configurar `spring.security.oauth2.client.registration.govbr`, criar `UsuarioSessao` a partir do token; desligar `/api/v1/auth/login` com `NEXT_AUTH_MODO=oidc` | SUBTI / gov.br (credenciamento costuma ser demorado — risco 13.2) |
+| I2 | **API do Portfólio** (sistema em desenvolvimento na SUBTI) | `PortfolioDemoGateway` com 6 sistemas fictícios; `PortfolioHttpGateway` pronto (timeout, degradação) | Confirmar o contrato (rotas, campos, autenticação); URL e credencial por ambiente | `NEXT_PORTFOLIO_MODO=http`, `NEXT_PORTFOLIO_URL`, `NEXT_PORTFOLIO_TOKEN`. Contrato esperado: `GET {base}/sistemas?termo=` e `GET {base}/sistemas/{id}` → `{id, sigla, nome, situacao, areaResponsavel}` | Equipe do Portfólio (SUBTI) |
+| I3 | **Eventos do Portfólio** (`portfolio.sistema.ativado`, renomeado) | Endpoint idempotente `POST /internal/v1/eventos` + botão "Simular evento" (Administrador) | Consumidor Redis Streams que leia o stream do Portfólio e chame `PortfolioService.consumir` | Novo componente em `infrastructure/eventos` | I5 |
+| I4 | **next-core** (usuários, perfis, MFA ativo) | `CoreDemoGateway` com usuários fictícios (ids iguais aos do login de desenvolvimento) | API do Core: pesquisa de usuários por nome, busca por id, perfis e fábrica | Implementar `CoreGateway` com `RestClient` (mesmo padrão do Portfólio) | Módulo Core |
+| I5 | **Redis Streams** (eventos entre processos, R6/D49) e **sessão distribuída** | Outbox gravado na transação; `PublicadorLog` publica no log; sessão em memória do BFF | Servidor Redis; implementar `PublicadorEventos` com `StreamOperations` (`XADD` no stream `next-configuracao`); `spring-session-data-redis` no BFF para mais de uma réplica; mover `LimiteTaxa` para Redis | `next.eventos.publicador=redis` | Infraestrutura |
+| I6 | **Serviço de e-mail (SMTP)** para notificações | Configuração das notificações completa (evento, canal, perfis, modelo, limiar, pré-visualização) | O **envio** é responsabilidade do Core (módulo de notificações, seção 5.1): consumir eventos e aplicar as configurações; servidor SMTP | Core / Sustentação | Infraestrutura + Core |
+| I7 | **Sustentação** — uso do SLA | Endpoint `GET /internal/v1/slas/{id}/versao-vigente?data=` e regras de cálculo prontas (`CalculoSla`, `CalculadoraExpediente`) | Sustentação chamar a versão vigente na abertura do chamado, aplicar pausas e publicar `sustentacao.sla.em-risco`/`violado` | Módulo Sustentação | Módulo Sustentação |
+| I8 | **Armazenamento de objetos (S3)** para anexos | Anexos (≤ 5 MB) gravados em BLOB na tabela `contratada_alteracao` | Bucket S3-compatível; guardar só metadados no banco | `ContratadaService.registrarAlteracao` | Infraestrutura |
+| I9 | **Antivírus** de uploads (seção 8.3) | Lista de tipos, tamanho máximo e verificação da assinatura do conteúdo | ClamAV (ou serviço corporativo) antes de disponibilizar o anexo | `ContratadaService.validarAnexo` | Segurança da informação |
+| I10 | **Cofre de segredos** | Segredos por variável de ambiente (`NEXT_TOKEN_INTERNO_SEGREDO`, senhas de banco) | Vault/Key Vault com rotação periódica da chave do token interno (seção 8.4) | Variáveis já externalizadas | Infraestrutura |
+| I11 | **Observabilidade centralizada** | Actuator (`health`, `metrics`, `prometheus`) e logs com `correlationId` | Prometheus/Grafana, coleta de logs JSON, OpenTelemetry | `management.*` | Infraestrutura |
+| I12 | **Receita Federal** (consulta de CNPJ) | Não consulta (RN29) | Se adotada no futuro, usar serviço oficial compatível com CNPJ alfanumérico | `ContratadaService` | Decisão do cliente |
+
+## Como testar cada integração hoje
+
+- **Portfólio**: tela *Portfólio* lista os sistemas fictícios; *Simular evento do Portfólio* envia `portfolio.sistema.ativado` (reenvie o mesmo identificador para ver a idempotência).
+- **Core**: as listas de fiscais e de membros de equipe vêm do adaptador de demonstração (`GET /api/v1/configuracao/usuarios`).
+- **Eventos**: com o módulo rodando, os eventos do outbox aparecem no log (`evento publicado tipo=...`). O painel mostra "eventos pendentes".

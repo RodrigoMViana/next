@@ -1,0 +1,62 @@
+/* next-tokens.css -- fonte única de design tokens do Next (Arquitetura 12.6, com D51) */
+:root {
+  /* 1. Paleta (valores brutos) */
+  --nx-navy: #1b4f8a; --nx-navy-dk: #123567; --nx-navy-lt: #ebf2fb;
+  --nx-cyan: #00b4c5; --nx-cyan-dk: #008a98; --nx-cyan-lt: #e5f8fa; --nx-cyan-ink: #007481;
+  --nx-green: #3bab6f; --nx-green-lt: #eaf6ef; --nx-green-ink: #1e6640;
+  --nx-amber: #e8a325; --nx-amber-lt: #fef6e5; --nx-amber-ink: #7a5000;
+  --nx-red: #d0453c; --nx-red-lt: #fdeeee; --nx-red-ink: #a8322a;
+  --nx-purple: #6c3483; --nx-purple-lt: #f4ecf7;
+  --nx-slate: #f4f6f9; --nx-slate-dk: #e8ecf2; --nx-white: #ffffff;
+  --nx-gray-900: #1a1d2e; --nx-gray-700: #4a5068; --nx-gray-500: #6e7590;
+  --nx-gray-400: #8a90a8; --nx-gray-200: #e2e4e8;
+
+  /* 2. Tokens semânticos (os componentes usam só estes) */
+  --nx-color-bg: var(--nx-slate);
+  --nx-color-surface: var(--nx-white);
+  --nx-color-surface-muted: var(--nx-slate-dk);
+  --nx-color-text: var(--nx-gray-900);
+  --nx-color-text-mid: var(--nx-gray-700);
+  --nx-color-text-subtle: var(--nx-gray-500);
+  --nx-color-text-disabled: var(--nx-gray-400);
+  --nx-color-border: var(--nx-gray-200);
+  --nx-color-primary: var(--nx-navy);
+  --nx-color-primary-hover: var(--nx-navy-dk);
+  --nx-color-primary-soft: var(--nx-navy-lt);
+  --nx-color-on-primary: var(--nx-white);
+  --nx-color-accent: var(--nx-cyan);
+  --nx-color-accent-ink: var(--nx-cyan-ink);
+  --nx-color-accent-soft: var(--nx-cyan-lt);
+  --nx-color-on-accent: var(--nx-navy-dk);
+  --nx-color-focus: var(--nx-cyan-dk);
+  --nx-color-success: var(--nx-green); --nx-color-success-soft: var(--nx-green-lt); --nx-color-success-ink: var(--nx-green-ink);
+  --nx-color-warning: var(--nx-amber); --nx-color-warning-soft: var(--nx-amber-lt); --nx-color-warning-ink: var(--nx-amber-ink);
+  --nx-color-danger: var(--nx-red); --nx-color-danger-soft: var(--nx-red-lt); --nx-color-danger-ink: var(--nx-red-ink);
+  --nx-color-governance: var(--nx-purple); --nx-color-governance-soft: var(--nx-purple-lt);
+
+  /* 3. Tipografia */
+  --nx-font-sans: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --nx-font-mono: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+  --nx-fs-xs: .75rem; --nx-fs-sm: .8125rem; --nx-fs-base: .875rem; --nx-fs-md: 1rem;
+  --nx-fs-lg: 1.25rem; --nx-fs-xl: 1.5rem; --nx-fs-2xl: 2rem;
+  --nx-fw-regular: 400; --nx-fw-medium: 500; --nx-fw-semibold: 600;
+
+  /* 4. Espaço, forma, elevação, movimento */
+  --nx-space-1: 4px; --nx-space-2: 8px; --nx-space-3: 12px; --nx-space-4: 16px;
+  --nx-space-5: 24px; --nx-space-6: 32px; --nx-space-7: 48px;
+  --nx-radius-sm: 6px; --nx-radius-md: 8px; --nx-radius-lg: 12px; --nx-radius-pill: 999px;
+  --nx-shadow-1: 0 2px 8px rgba(26, 29, 46, .08);
+  --nx-shadow-2: 0 8px 24px rgba(26, 29, 46, .16);
+  --nx-duration-fast: 150ms; --nx-duration-base: 250ms; --nx-ease: cubic-bezier(.2, 0, 0, 1);
+
+  /* 5. Layout */
+  --nx-appbar-h: 48px; --nx-sidebar-w: 56px; --nx-sidebar-w-open: 240px;
+  --nx-bottomnav-h: 56px; --nx-fab-size: 56px; --nx-content-max: 1200px;
+
+  /* 6. Camadas (12.5) */
+  --nx-z-appbar: 100; --nx-z-sidebar: 110; --nx-z-fab: 120; --nx-z-dropdown: 200; --nx-z-modal: 300; --nx-z-toast: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --nx-duration-fast: 0ms; --nx-duration-base: 0ms; }
+}

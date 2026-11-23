@@ -1,0 +1,15 @@
+# Imagem OCI do módulo next-configuracao (Arquitetura 3.2: portabilidade em contêiner)
+# Build (na raiz do repositório): docker build -f infra/docker/Dockerfile.configuracao -t next-configuracao:1.0.0 .
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /src
+COPY backend/ backend/
+RUN cd backend && chmod +x mvnw && ./mvnw -B -q -pl next-configuracao -am -DskipTests package
+
+FROM eclipse-temurin:25-jre
+RUN useradd --system --uid 10001 next
+WORKDIR /app
+COPY --from=build /src/backend/next-configuracao/target/next-configuracao.jar app.jar
+USER next
+EXPOSE 8081
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -Duser.timezone=UTC"
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

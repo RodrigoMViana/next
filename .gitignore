@@ -1,0 +1,30 @@
+# Documentos de entrada do cliente (mantidos fora do repositório público)
+*.pdf
+*.docx
+Tecnologia.txt
+
+# Build
+backend/**/target/
+frontend/next-app/node_modules/
+frontend/next-app/dist/
+frontend/next-app/dist-demo/
+frontend/next-app/coverage/
+frontend/next-app/.eslintcache
+*.tsbuildinfo
+logs/
+
+# Segredos e ambiente
+infra/.env
+.env.local
+*.local
+
+# IDE / SO
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+.DS_Store
+Thumbs.db
+
+# Configurações locais do Claude Code
+.claude/settings.local.json
